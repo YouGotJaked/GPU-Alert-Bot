@@ -5,6 +5,8 @@ import os
 import sys
 
 my_file = "log.txt"
+count = 0
+secs = 2
 
 # log into reddit using config.py
 def login():
@@ -21,7 +23,7 @@ def login():
     return reddit
 
 # searches for a target word in a specific subreddit and prints out the count
-def run_bot(reddit,target,sub,lim,secs):
+def run_bot(reddit,target,sub,lim):
     subreddit = reddit.subreddit(sub)
     
     for submission in subreddit.new(limit = lim):
@@ -31,11 +33,11 @@ def run_bot(reddit,target,sub,lim,secs):
             log_url(my_file,submission.url)
             # email url to self
 
-    print "\nSleeping for",secs,"seconds..."
-    time.sleep(secs)
+    sleep()
 
 # log the urls in a text file
 def log_url(file,url):
+    global count
     #check if file exists
     if not os.path.isfile(my_file):
         print "\nFile %s does not exist. Creating file..." % my_file
@@ -50,6 +52,7 @@ def log_url(file,url):
         else:
             if url in f.read():
                 print "URL already in file!"
+                count = count + 1
             else:
                 print "\n%s: Added '%s' to file." % (current_time(),url)
                 f.write("%s\n\n" % url)
@@ -57,11 +60,24 @@ def log_url(file,url):
 def current_time():
     return time.asctime(time.localtime(time.time()))
 
+def sleep():
+    global count,secs
+    
+    if count > 50:
+        count = 0
+        print "\nThreshold hit."
+        secs = 60
+    else:
+        secs = 2
+
+    print "\nSleeping for %d seconds... count is %d" % (secs,count)
+    time.sleep(secs)
+
 def main():
     #TODO: get keyword and subreddit from user input
     reddit = login()
     while True:
-        run_bot(reddit,"1080",'buildapcsales',50,2)
+        run_bot(reddit,"1080",'buildapcsales',50)
 
 if __name__== "__main__":
     main()
