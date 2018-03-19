@@ -28,7 +28,7 @@ def run_bot(reddit,target,sub,lim):
     
     for submission in subreddit.new(limit = lim):
         title = submission.title
-        if target in title:
+        if target.lower() in title.lower():
             print "\nTarget found in '%s'" % title
             log_url(my_file,submission.url)
             # email url to self
@@ -38,6 +38,7 @@ def run_bot(reddit,target,sub,lim):
 # log the urls in a text file
 def log_url(file,url):
     global count
+    
     #check if file exists
     if not os.path.isfile(my_file):
         print "\nFile %s does not exist. Creating file..." % my_file
@@ -63,9 +64,10 @@ def current_time():
 def sleep():
     global count,secs
     
+    # TODO: change 50 to constant threshold
     if count > 50:
-        count = 0
         print "\nThreshold hit."
+        count = 0
         secs = 60
     else:
         secs = 2
@@ -74,10 +76,16 @@ def sleep():
     time.sleep(secs)
 
 def main():
-    #TODO: get keyword and subreddit from user input
     reddit = login()
+    keyword = raw_input("\nEnter a keyword to search: ")
     while True:
-        run_bot(reddit,"1080",'buildapcsales',50)
+        print "\nPress CTRL-C to exit program at any time."
+        time.sleep(secs)
+        try:
+            run_bot(reddit,keyword,'buildapcsales',50)
+        except KeyboardInterrupt:
+            print "\nExiting %s" % sys.argv[0]
+            return
 
 if __name__== "__main__":
     main()
