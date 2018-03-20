@@ -18,7 +18,7 @@ def login():
                     client_secret = config.client_secret,
                     user_agent = "GPU Alert Bot")
     
-    print "Logged in!"
+    print "Logged in as %s" % config.username
             
     return reddit
 
@@ -75,17 +75,26 @@ def sleep():
     print "\nSleeping for %d seconds... count is %d" % (secs,count)
     time.sleep(secs)
 
+def user_input():
+    try:
+        keyword = raw_input("\nEnter a keyword to search: ")
+        return keyword
+    except (EOFError,KeyboardInterrupt):
+        print "\nExiting %s" % sys.argv[0]
+        sys.exit(0)
+
 def main():
     reddit = login()
-    keyword = raw_input("\nEnter a keyword to search: ")
+
+    keyword = user_input()
+
     while True:
         print "\nPress CTRL-C to exit program at any time."
-        time.sleep(secs)
         try:
             run_bot(reddit,keyword,'buildapcsales',50)
-        except KeyboardInterrupt:
+        except (EOFError,KeyboardInterrupt):
             print "\nExiting %s" % sys.argv[0]
-            return
+            sys.exit(0)
 
 if __name__== "__main__":
     main()
