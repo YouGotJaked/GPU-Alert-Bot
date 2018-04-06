@@ -1,3 +1,4 @@
 *.pyc
-*config.py
-*.DS_STORE
+config.py
+.DS_STORE
+gmail.txt

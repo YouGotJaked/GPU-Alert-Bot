@@ -6,10 +6,15 @@ import sys
 import smtplib
 from email.mime.text import MIMEText
 
-addr = "jaked97@gmail.com"
-my_file = "log.txt"
+email_file = "gmail.txt"
+log_file = "log.txt"
 count = 0
 secs = 2
+
+class Email():
+    def __init__(self, addr, password):
+        self.addr = addr
+        self.password = password
 
 # log into reddit using config.py
 def login():
@@ -33,7 +38,7 @@ def run_bot(reddit,target,sub,lim):
         title = submission.title
         if target.lower() in title.lower():
             print "\nTarget found in '%s'" % title
-            if log_url(my_file,submission.url):
+            if log_url(log_file,submission.url):
                 send_email(title,submission.url)
     sleep()
 
@@ -42,7 +47,7 @@ def log_url(file,url):
     global count
     
     #check if file exists
-    if not os.path.isfile(my_file):
+    if not os.path.isfile(log_file):
         print "\nFile %s does not exist. Creating file..." % my_file
         f = open(file,"a+")
         f.close()
@@ -63,13 +68,30 @@ def log_url(file,url):
         return True
 
 def send_email(title,url):
+    my_email = get_email(email_file)
+    addr = my_email.addr
+    password = my_email.password
+    
+    try:
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.ehlo()
+        server.login(addr, password)
+    except:
+        print "Could not connect to email server."
+
     msg = MIMEText(url)
     msg['Subject'] = title
     msg['From'] = addr
     msg['To'] = addr
-    s = smtplib.SMTP('localhost', 1025)
-    s.sendmail(addr, [addr], msg.as_string())
-    s.quit()
+    server.sendmail(addr, [addr], msg.as_string())
+    server.quit()
+
+def get_email(file):
+    with open(file) as f:
+        lines = f.readlines()
+    #remove whitespace characters
+    lines = [x.strip() for x in lines]
+    return Email(lines[0], lines[1])
 
 def current_time():
     return time.asctime(time.localtime(time.time()))
@@ -85,7 +107,7 @@ def sleep():
     elif secs != 2:
         secs = 2
 
-    print "\nSleeping for %d seconds... count is %d" % (secs,count)
+    print "\nSleeping for %d seconds..." % secs
     time.sleep(secs)
 
 def user_input():
